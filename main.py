@@ -32,7 +32,6 @@ What would you like to do?
     choice = int(input("> "))
     return choice
 
-
 def askProfInfo(currentInfo=()):
     """
     asks user for a professor's info.
@@ -272,76 +271,6 @@ def updateProf(conn, info):
 
     conn.commit()
     print(f"{info[1]} successfully updated!")
-
-def searchProfName():
-    """
-    Ask of first name of professor
-
-    Returns:
-        (str): 
-    """
-
-    name = input("First Name: ")
-    return name
-
-def getProfID():
-    """
-    user selects individual professor
-
-    Returns:
-        (int): Primary Key
-    """
-    global CURSOR
-
-    profs = CURSOR.execute('''
-        SELECT
-            id,
-            name
-        FROM
-            professors
-        ORDER BY
-            name
-    ;''').fetchall()
-
-    print("Please select a professor")
-    for i in range(len(profs)):
-        print(f"{i+1}. {profs[i][1]}")
-
-    rowIndex = input("> ")
-    rowIndex = int(rowIndex) - 1
-
-    profID = profs[rowIndex][0]
-    return profID
-
-# TODO: fix querying with name to work with name as one field
-def queryProfName(name):
-    """
-    Query the database for the professors
-
-    Args:
-        name (str):
-
-    Returns:
-        results (list): 2D array
-    """
-    global CURSOR
-
-    results = CURSOR.execute('''
-        SELECT
-            name,
-            email,
-            link,
-            text
-        FROM
-            professors
-
-        WHERE
-            firstName = ?
-        ORDER BY
-            lastName
-    ;''', [name]).fetchall()
-
-    return results
 
 # --- MAIN PROGRAM CODE --- #
 if __name__ == "__main__":
