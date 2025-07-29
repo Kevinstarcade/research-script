@@ -12,10 +12,11 @@ def menu():
     """
 
     print('''
-1. View all professors
-2. Select a professor
-3. Add professor
-4. EXIT
+    1. View all professors
+    2. Select a professor
+    3. Add professor
+    4. Quick import (using CSV)
+    5. EXIT
     ''')
     choice = int(input("> "))
     return choice
@@ -88,6 +89,24 @@ def addProf(conn, profInfo):
     conn.commit()
     print(f"{profInfo[0]} successfully saved!")
 
+def importProf(conn, fileName):
+    """
+    Import professors from a CSV file
+
+    Args:
+        conn (): database object
+        filename (str): path to the CSV file
+    """
+    import csv
+
+    with open(fileName, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if len(row) >= 4:  # Ensure there are enough columns
+                addProf(conn, tuple(row[:4]))  # Only take the first four columns
+            elif len(row) == 3:
+                addProf(conn, (*row, ''))  # Add empty text if not provided
+
 def deleteProf(conn, ID):
     """
     Delete a professor from the database
@@ -95,6 +114,11 @@ def deleteProf(conn, ID):
     Args:
         ID (int): Primary Key
     """
+    confirm = input("Are you sure you want to delete this professor? (y/N): ")
+    if confirm.lower() != 'y' or confirm.lower() != 'yes':
+        print("Deletion cancelled.")
+        return
+
     c = conn.cursor()
 
     prof = c.execute('''
@@ -169,15 +193,16 @@ def displayAllProfs(conn):
     c = conn.cursor()
     profs = c.execute('''
         SELECT
-            name
+            *
         FROM
             professors
         ORDER BY
             name
     ;''').fetchall()
-
-    for prof in profs:
-        print(prof[0])
+    if len(profs) == 0:
+        print("There are no professors in the database.")
+        return
+    return profs
 
 def displayResults(results):
     """
@@ -188,11 +213,13 @@ def displayResults(results):
     """
     for prof in results:
         ID, name, email, link, text = prof
-        print(f"Viewing {name}")
+        print(f"{name}")
         print(f"email: {email}")
         print(f"Profile Link: {link}")
         if text:
             print(f"Email Draft: {text[:100]}...")
+
+        print("-" * 80)
 
 def main():
     firstRun = True
@@ -209,7 +236,9 @@ def main():
         operation = menu()
 
         if operation == 1: # view all profs
-            displayAllProfs(conn)
+            results = displayAllProfs(conn)
+            if results:
+                displayResults(results)
 
         elif operation == 2: # select prof
             selectProfByName(conn)
@@ -218,6 +247,13 @@ def main():
             profInfo = askProfInfo()
             if profInfo:
                 addProf(conn, profInfo)
+
+        elif operation == 4: # quick import (WIP)
+            fileName = input("Enter the path to the CSV file: ")
+            if pathlib.Path(fileName).exists():
+                importProf(conn, fileName)
+            else:
+                print("File does not exist. Please try again.")
 
         else:
             exit()
@@ -242,7 +278,8 @@ def profView(conn, info):
             pass
 
         elif operation == 4: # Delete Professor
-            selectProfByName(conn)
+            deleteProf(conn, info[0])
+            break
 
         else: # go back
             break
