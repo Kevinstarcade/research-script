@@ -202,7 +202,16 @@ def displayAllProfs(conn):
     if len(profs) == 0:
         print("There are no professors in the database.")
         return
-    return profs
+    
+    print(f"{'Name' :<20} | {'Email' :<30} | Email")
+    print("=" * 160)
+    
+    for prof in profs:
+        ID, name, email, link, text = prof
+        print(f"{name :<20} | {email :<30} | ", end="")
+        print(f"Email Draft: {text[:100] if text else ''}{'...' if len(text) > 100 else ''}")
+
+        print("-" * 80)
 
 def displayResults(results):
     """
@@ -211,6 +220,8 @@ def displayResults(results):
     Args:
         results (list): 2D array
     """
+    print("=" * 80)
+
     for prof in results:
         ID, name, email, link, text = prof
         print(f"{name}")
@@ -248,7 +259,7 @@ def main():
             if profInfo:
                 addProf(conn, profInfo)
 
-        elif operation == 4: # quick import (WIP)
+        elif operation == 4: # quick import
             fileName = input("Enter the path to the CSV file: ")
             if pathlib.Path(fileName).exists():
                 importProf(conn, fileName)
@@ -260,7 +271,6 @@ def main():
 
 def profView(conn, info):
     while True:
-        print("=" * 80)
         displayResults([info])
         operation = profMenu()
 
